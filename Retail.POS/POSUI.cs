@@ -16,14 +16,14 @@ namespace Retail.POS
 
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
-        private readonly IItemRepository<PosItem> _itemRepository;
+        private readonly IItemRepository _itemRepository;
         private readonly IScale _scale;
         private readonly ITransactionHandler _transactionHandler;
 
         public POSUI(
             IConfiguration config,
             ILogger logger,
-            IItemRepository<PosItem> itemRepository,
+            IItemRepository itemRepository,
             IScale scale,
             ITransactionHandler transactionHandler)
         {
@@ -32,6 +32,10 @@ namespace Retail.POS
             _itemRepository = itemRepository;
             _scale = scale;
             _transactionHandler = transactionHandler;
+
+            // Initialize transaction handler
+            _transactionHandler.ItemAdded += OnItemAdded;
+            _transactionHandler.AddError += OnAddError;
 
             _logger.LogInformation("Initializing POS.");
             InitializeComponent();
@@ -112,19 +116,19 @@ namespace Retail.POS
 
             // Show item on POS
             var item = _itemRepository.Get(gtin);
-            item.Quantity = CurrentQuantity;
-            item.Weight = item.Weighed ? _scale.GetWeight() : 0;
+            //item.Quantity = CurrentQuantity;
+            //item.Weight = item.Weighed ? _scale.GetWeight() : 0;
             _transactionHandler.AddItem(item);
         }
 
         private void OnItemAdded(object sender, ItemEventArgs args)
         {
             var item = args.Item;
-            string posDescription = $"{item.Description} ${item.Price}";
+            string posDescription = $"{item.Description} ${item.SellPrice}";
             ItemEntryScreen.Items.Add(posDescription);
 
             // Highlight last line
-            int itemCount = ItemEntryScreen.Items.Count;
+            int itemCount = _transactionHandler.ItemCount;
             ItemEntryScreen.SetSelected(itemCount - 1, true);
 
             // Update text views
@@ -133,6 +137,7 @@ namespace Retail.POS
             CurrentQuantity = 1;
             ItemEntryBox.Clear();
         }
+
         private void OnAddError(object sender, ItemErrorEventArgs args)
         {
             MessageBox.Show(args.Message);
@@ -143,6 +148,18 @@ namespace Retail.POS
             ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
             CurrentQuantity = 1;
             ItemEntryBox.Clear();
+        }
+
+        private void OnItemVoided(object sender, ItemEventArgs args)
+        {
+            var item = args.Item;
+            var posLines = new[]
+            {
+                "Void item",
+               $"  {item.Description} -${item.SellPrice}"
+            };
+
+
         }
 
         private void IdleTimer_Tick(object sender, EventArgs e)

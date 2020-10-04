@@ -1,6 +1,6 @@
 ﻿namespace Retail.POS.Common.Models.LineItems.Tenders
 {
-    public interface ITenderLine : ILineItem
+    public interface ITenderLine 
     {
         TenderType TenderType { get; set; }
     }

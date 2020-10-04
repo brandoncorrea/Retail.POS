@@ -1,13 +1,16 @@
 ﻿namespace Retail.POS.Common.Models.LineItems
 {
-    public class PosPromotion : ILineItem
+    public class PosItem : IItem
     {
+        public string ItemId { get; set; }
         public string Description { get; set; }
-        public decimal PromotionAmount { get; set; }
-        public string[] LinkedGtins { get; set; }
+        public double SellPrice { get; set; }
+        public int SellMultiple { get; set; }
+        public bool Weighed { get; set; }
         public bool Tax1 { get; set; }
         public bool Tax2 { get; set; }
         public bool Tax3 { get; set; }
         public bool Tax4 { get; set; }
+        public bool FoodStamp { get; set; }
     }
 }

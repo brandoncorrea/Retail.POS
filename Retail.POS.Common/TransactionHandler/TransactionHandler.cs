@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Retail.POS.Common.Models.LineItems;
+using Retail.POS.Common.Models;
 using Retail.POS.Common.Repositories;
+using Retail.POS.Common.TransactionHandler.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,193 +10,270 @@ namespace Retail.POS.Common.TransactionHandler
 {
     public class TransactionHandler : ITransactionHandler
     {
-        // Transaction Data
-        private List<PosItem> AddedItems { get; set; }
-        private List<PosItem> VoidedItems { get; set; }
-        private List<PosItem> RefundedItems { get; set; }
-        private List<PosPromotion> AddedPromotions { get; set; }
-        private List<PosPromotion> VoidedPromotions { get; set; }
-        private List<PosPromotion> RefundedPromotions { get; set; }
-        
+        // Class Properties
+        public int ItemCount { get => Items.Select(i => i.Quantity).Sum(); }
+        private List<LineItem> Items { get; set; }
+        private List<LineItem> Refunds { get; set; }
+        public double GrossTotal => NetTotal + TaxTotal;
+        public double NetTotal
+        {
+            get
+            {
+                return Items
+                    .Select(i =>
+                    {
+                        var unitPrice = Math.Round(i.Item.SellPrice / i.Item.SellMultiple, 2);
+                        if (i.Item.Weighed)
+                            return Math.Round(unitPrice * i.Weight, 2) * i.Quantity;
+                        return unitPrice * i.Quantity;
+                    })
+                    .Sum();
+            }
+        }
+        public double TaxTotal
+        {
+            get
+            {
+                return Items
+                    .Select(i => CalculateTax(i))
+                    .Sum();
+            }
+        }
+
         // Dependencies
         private readonly IConfiguration _config;
-        private readonly IItemRepository<PosItem> _itemRepository;
+        private readonly IItemRepository _itemRepository;
 
         // Events
-        public event EventHandler ItemAdded;
-        public event EventHandler ItemVoided;
-        public event EventHandler ItemRefunded;
-        public event EventHandler PromotionAdded;
-        public event EventHandler PromotionRemoved;
-        public event EventHandler TenderReversed;
-        public event EventHandler TenderAdded;
-        public event EventHandler TransactionCompleted;
-        public event EventHandler TransactionVoided;
-        public event EventHandler ItemAddedError;
-        public event EventHandler ItemVoidedError;
-        public event EventHandler ItemRefundedError;
-        public event EventHandler TenderError;
+        public event EventHandler<ItemEventArgs> ItemAdded = delegate { };
+        public event EventHandler<ItemEventArgs> ItemVoided = delegate { };
+        public event EventHandler<ItemEventArgs> ItemRefunded = delegate { };
+        public event EventHandler<ItemEventArgs> RefundVoided = delegate { };
+        public event EventHandler<ItemErrorEventArgs> AddError = delegate { };
+        public event EventHandler<ItemErrorEventArgs> VoidError = delegate { };
+        public event EventHandler<ItemErrorEventArgs> RefundError = delegate { };
+        public event EventHandler<ItemErrorEventArgs> VoidRefundError = delegate { };
 
         public TransactionHandler(
             IConfiguration config,
-            IItemRepository<PosItem> itemRepository)
+            IItemRepository itemRepository)
         {
             _config = config;
             _itemRepository = itemRepository;
-            AddedItems = new List<PosItem>();
-            VoidedItems = new List<PosItem>();
-            RefundedItems = new List<PosItem>();
-            AddedPromotions = new List<PosPromotion>();
-            VoidedPromotions = new List<PosPromotion>();
+            Items = new List<LineItem>();
+            Refunds = new List<LineItem>();
         }
-
-        public IEnumerable<PosItem> GetAddedItems() => AddedItems;
-        public IEnumerable<PosItem> GetVoidedItems() => VoidedItems;
-        public IEnumerable<PosItem> GetRefundedItems() => RefundedItems;
-        public IEnumerable<PosPromotion> GetAddedPromotions() => AddedPromotions;
-        public IEnumerable<PosPromotion> GetVoidedPromotions() => VoidedPromotions;
-        public IEnumerable<PosPromotion> GetRefundedPromotions() => RefundedPromotions;
-        public PosItem GetLastItemAdded() => AddedItems.LastOrDefault();
-        public PosItem GetLastItemRefunded() => RefundedItems.LastOrDefault();
-        public PosItem GetLastItemVoided() => VoidedItems.LastOrDefault();
-        public PosPromotion GetLastPromotionAdded() => AddedPromotions.LastOrDefault();
-        public PosPromotion GetLastPromotionRefunded() => RefundedPromotions.LastOrDefault();
-        public PosPromotion GetLastPromotionVoided() => VoidedPromotions.LastOrDefault();
 
         public void AddItem(object id)
         {
-            var item = _itemRepository.Get(id);
-            AddedItems.Add(item);
-            var args = new TransactionEventArgs() 
-            { 
-                Item = item 
+            var lineItem = new LineItem()
+            {
+                Item = _itemRepository.Get(id),
+                Quantity = 1,
+                Weight = 0
             };
-            ItemAdded.Invoke(this, args);
+            AddLineItem(id, lineItem);
+        }
+        public void AddItem(object id, double weight)
+        {
+            var lineItem = new LineItem()
+            {
+                Item = _itemRepository.Get(id),
+                Quantity = 1,
+                Weight = weight,
+            };
+            AddLineItem(id, lineItem);
+        }
+        public void AddItem(object id, int quantity)
+        {
+            var lineItem = new LineItem()
+            {
+                Item = _itemRepository.Get(id),
+                Quantity = quantity,
+                Weight = 0,
+            };
+            AddLineItem(id, lineItem);
         }
 
         public void VoidItem(object id)
         {
-            var item = _itemRepository.Get(id);
-            var lastIndex = AddedItems.FindLastIndex(i => i.GTIN == item.GTIN);
-            var voidItem = AddedItems[lastIndex];
-            VoidedItems.Add(voidItem);
-            AddedItems.RemoveAt(lastIndex);
-            var args = new TransactionEventArgs()
+            var itemId = id.ToString();
+            var lastIndex = Items.FindLastIndex(i => i.Item.ItemId == itemId);
+            VoidItemAtIndex(itemId, lastIndex);
+        }
+        public void VoidItem(object id, int quantity)
+        {
+            var itemId = id.ToString();
+            var totalInOrder = Items
+                .Where(i => i.Item.ItemId == itemId)
+                .Select(i => i.Quantity)
+                .Sum();
+
+            if (totalInOrder < quantity)
             {
-                Item = voidItem
-            };
-            ItemVoided.Invoke(this, args);
+                var args = new ItemErrorEventArgs()
+                {
+                    ItemId = itemId,
+                    Message = "Quantity exceeded items in transaction.",
+                };
+                VoidError.Invoke(this, args);
+            }
+            else
+                VoidQuantityItems(itemId, quantity);
+        }
+        public void VoidItem(object id, double weight)
+        {
+            var itemId = id.ToString();
+            var lastIndex = Items
+                .FindLastIndex(i => i.Item.ItemId == itemId && i.Weight == weight);
+            VoidItemAtIndex(itemId, lastIndex);
         }
 
         public void RefundItem(object id)
         {
             var item = _itemRepository.Get(id);
-            RefundedItems.Add(item);
-            var args = new TransactionEventArgs()
+            if (item == null)
             {
-                Item = item
-            };
-            ItemRefunded.Invoke(this, args);
+                var args = new ItemNotFoundEventArgs(id.ToString());
+                RefundError.Invoke(this, args);
+            }
+            else
+            {
+                var lineItem = new LineItem()
+                {
+                    Item = item,
+                    Quantity = 1,
+                    Weight = 0,
+                };
+                Refunds.Add(lineItem);
+                var args = new ItemEventArgs(lineItem);
+                ItemRefunded.Invoke(this, args);
+            }
         }
-
-        public decimal GetGrossTotal() => 
-            GetNetTotal() + GetTaxTotal();
-
-        public decimal GetNetTotal()
-        {
-            var addedTotal = AddedItems
-                .Select(i => (i.Price * i.Quantity) * (i.Weighed ? i.Weight : 1))
-                .Sum();
-
-            var refundedTotal = RefundedItems
-                .Select(i => (i.Price * i.Quantity) * (i.Weighed ? i.Weight : 1))
-                .Sum();
-
-            return addedTotal - refundedTotal;
-        }
-
-        public decimal GetTaxTotal()
-        {
-            decimal taxRate1 = decimal.Parse(_config.GetSection("Taxes:Rate1").Value);
-            decimal taxRate2 = decimal.Parse(_config.GetSection("Taxes:Rate2").Value);
-            decimal taxRate3 = decimal.Parse(_config.GetSection("Taxes:Rate3").Value);
-            decimal taxRate4 = decimal.Parse(_config.GetSection("Taxes:Rate4").Value);
-
-            decimal calculateTax(PosItem item) =>
-                (item.Tax1 ? item.Price * taxRate1 : 0) +
-                (item.Tax2 ? item.Price * taxRate2 : 0) +
-                (item.Tax3 ? item.Price * taxRate3 : 0) +
-                (item.Tax4 ? item.Price * taxRate4 : 0);
-
-            var addedTotal = AddedItems
-                .Select(i => calculateTax(i))
-                .Sum();
-
-            var refundedTotal = RefundedItems
-                .Select(i => calculateTax(i))
-                .Sum();
-
-            return addedTotal - refundedTotal;
-        }
-
-        public IEnumerable<ILineItem> GetLineItems()
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal GetPromotionAmount()
-        {
-            throw new NotImplementedException();
-        }
-
-        public decimal GetCouponAmount()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AddItem(object id, int quantity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AddItem(object id, decimal weight)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VoidItem(object id, int quantity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VoidItem(object id, decimal weight)
-        {
-            throw new NotImplementedException();
-        }
-
         public void RefundItem(object id, int quantity)
         {
             throw new NotImplementedException();
         }
-
-        public void RefundItem(object id, decimal weight)
+        public void RefundItem(object id, double weight)
         {
             throw new NotImplementedException();
         }
 
-        public void AddCoupon(object id)
+        public void VoidRefund(object id)
+        {
+            throw new NotImplementedException();
+        }
+        public void VoidRefund(object id, int quantity)
+        {
+            throw new NotImplementedException();
+        }
+        public void VoidRefund(object id, double weight)
         {
             throw new NotImplementedException();
         }
 
-        public void VoidCoupon(object id)
+        #region Helpers
+        // Adds a LineItem to the Items list
+        private void AddLineItem(object id, LineItem lineItem)
         {
-            throw new NotImplementedException();
+            if (lineItem.Item == null)
+            {
+                var args = new ItemNotFoundEventArgs(id.ToString());
+                AddError.Invoke(this, args);
+            }
+            else
+            {
+                Items.Add(lineItem);
+                var args = new ItemEventArgs(lineItem);
+                ItemAdded.Invoke(this, args);
+            }
+        }
+        
+        // Voids an item from the Items list
+        private void VoidItemAtIndex(string itemId, int index)
+        {
+            if (index < 0)
+            {
+                var args = new ItemErrorEventArgs()
+                {
+                    ItemId = itemId,
+                    Message = "Item not in current order.",
+                };
+                VoidError.Invoke(this, args);
+            }
+            else
+            {
+                var voidItem = Items[index];
+                Items.RemoveAt(index);
+                var args = new ItemEventArgs(voidItem);
+                ItemVoided.Invoke(this, args);
+            }
         }
 
-        public void RefundCoupon(object id)
+        // Removes items from the transaction until the quantity has been reached
+        private void VoidQuantityItems(string itemId, int quantity)
         {
-            throw new NotImplementedException();
+            var item = Items
+                .Select(i => i.Item)
+                .FirstOrDefault(i => i.ItemId == itemId);
+
+            var lineItem = new LineItem()
+            {
+                Item = item,
+                Quantity = quantity,
+                Weight = 0
+            };
+
+            while (quantity > 0)
+            {
+                var lastIndex = Items.FindLastIndex(i => i.Item.ItemId == itemId);
+                var qtyAtIndex = Items[lastIndex].Quantity;
+                if (quantity >= qtyAtIndex)
+                    Items.RemoveAt(lastIndex);
+                else
+                    Items[lastIndex].Quantity -= quantity;
+                quantity -= qtyAtIndex;
+            }
+
+            var args = new ItemEventArgs(lineItem);
+            ItemVoided.Invoke(this, args);
         }
+        
+        // Returns the tax total for a given item
+        private double CalculateTax(LineItem lineItem)
+        {
+            // Get tax rates
+            double taxRate1 = double.Parse(_config.GetSection("Taxes:Rate1").Value);
+            double taxRate2 = double.Parse(_config.GetSection("Taxes:Rate2").Value);
+            double taxRate3 = double.Parse(_config.GetSection("Taxes:Rate3").Value);
+            double taxRate4 = double.Parse(_config.GetSection("Taxes:Rate4").Value);
+
+            var item = lineItem.Item;
+            var unitPrice = Math.Round(item.SellPrice / item.SellMultiple, 2);
+            
+            // Get tax totals
+            var tax1Total = (item.Tax1 ? unitPrice * taxRate1 : 0);
+            var tax2Total = (item.Tax2 ? unitPrice * taxRate2 : 0);
+            var tax3Total = (item.Tax3 ? unitPrice * taxRate3 : 0);
+            var tax4Total = (item.Tax4 ? unitPrice * taxRate4 : 0);
+
+            // Calculate taxes
+            tax1Total = Math.Round(tax1Total * lineItem.Quantity, 2);
+            tax2Total = Math.Round(tax2Total * lineItem.Quantity, 2);
+            tax3Total = Math.Round(tax3Total * lineItem.Quantity, 2);
+            tax4Total = Math.Round(tax4Total * lineItem.Quantity, 2);
+
+            if (item.Weighed)
+            {
+                tax1Total *= lineItem.Weight;
+                tax2Total *= lineItem.Weight;
+                tax3Total *= lineItem.Weight;
+                tax4Total *= lineItem.Weight;
+            }
+
+            // Return tax sum
+            return (tax1Total + tax2Total + tax3Total + tax4Total) / 100;
+        }
+        #endregion
     }
 }

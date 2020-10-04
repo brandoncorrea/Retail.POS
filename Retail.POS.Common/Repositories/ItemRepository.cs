@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace Retail.POS.Common.Repositories
 {
-    public class ItemRepository : IItemRepository<PosItem>
+    public class ItemRepository : IItemRepository
     {
-        public PosItem Get(object id)
+        public IItem Get(object id)
         {
             long gtin = long.Parse(id.ToString());
             var jsonStr = File.ReadAllText("itemStore.json");
             var items = JsonConvert.DeserializeObject<PosItem[]>(jsonStr);
-            return items.FirstOrDefault(i => long.Parse(i.GTIN) == gtin);
+            return items.FirstOrDefault(i => long.Parse(i.ItemId) == gtin);
         }
     }
 }

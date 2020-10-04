@@ -7,10 +7,7 @@ using Retail.POS.Common.Repositories;
 using Retail.POS.Common.Scale;
 using Retail.POS.Common.TransactionHandler;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Retail.POS
@@ -46,7 +43,7 @@ namespace Retail.POS
                 .AddSingleton<POSUI>()
                 .AddSingleton<IConfiguration>(configuration)
                 .AddScoped<ILogger, PosLogger>()
-                .AddScoped<IItemRepository<PosItem>, ItemRepository>()
+                .AddScoped<IItemRepository, ItemRepository>()
                 .AddScoped<IScale, PosScale>()
                 .AddScoped<ITransactionHandler, TransactionHandler>()
                 //.AddScoped<IBusinessLayer, CBusinessLayer>()

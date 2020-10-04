@@ -1,41 +1,36 @@
-﻿using Retail.POS.Common.Models.LineItems;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Retail.POS.Common.TransactionHandler
 {
     public interface ITransactionHandler
     {
-        event EventHandler ItemAdded;
-        event EventHandler ItemVoided;
-        event EventHandler ItemRefunded;
-        event EventHandler PromotionAdded;
-        event EventHandler PromotionRemoved;
-        event EventHandler TenderReversed;
-        event EventHandler TenderAdded;
-        event EventHandler TransactionCompleted;
-        event EventHandler TransactionVoided;
-        event EventHandler ItemAddedError;
-        event EventHandler ItemVoidedError;
-        event EventHandler ItemRefundedError;
-        event EventHandler TenderError;
+        public event EventHandler<ItemEventArgs> ItemAdded;
+        public event EventHandler<ItemEventArgs> ItemVoided;
+        public event EventHandler<ItemEventArgs> ItemRefunded;
+        public event EventHandler<ItemEventArgs> RefundVoided;
+        public event EventHandler<ItemErrorEventArgs> AddError;
+        public event EventHandler<ItemErrorEventArgs> VoidError;
+        public event EventHandler<ItemErrorEventArgs> RefundError;
+        public event EventHandler<ItemErrorEventArgs> VoidRefundError;
 
-        public IEnumerable<ILineItem> GetLineItems();
-        public decimal GetNetTotal();
-        public decimal GetTaxTotal();
-        public decimal GetPromotionAmount();
-        public decimal GetCouponAmount();
+        public int ItemCount { get; }
+        public double NetTotal { get; }
+        public double TaxTotal { get; }
+        
         public void AddItem(object id);
         public void AddItem(object id, int quantity);
-        public void AddItem(object id, decimal weight);
+        public void AddItem(object id, double weight);
+        
         public void VoidItem(object id);
         public void VoidItem(object id, int quantity);
-        public void VoidItem(object id, decimal weight);
+        public void VoidItem(object id, double weight);
+        
         public void RefundItem(object id);
         public void RefundItem(object id, int quantity);
-        public void RefundItem(object id, decimal weight);
-        public void AddCoupon(object id);
-        public void VoidCoupon(object id);
-        public void RefundCoupon(object id);
+        public void RefundItem(object id, double weight);
+
+        public void VoidRefund(object id);
+        public void VoidRefund(object id, int quantity);
+        public void VoidRefund(object id, double weight);
     }
 }

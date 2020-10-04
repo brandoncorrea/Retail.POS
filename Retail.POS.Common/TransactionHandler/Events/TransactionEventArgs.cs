@@ -5,6 +5,11 @@ namespace Retail.POS.Common.TransactionHandler
 {
     public class TransactionEventArgs : EventArgs
     {
-        public PosItem Item { get; set; }
+        public IItem Item { get; set; }
+        
+        public TransactionEventArgs(IItem item)
+        {
+            Item = item;
+        }
     }
 }
