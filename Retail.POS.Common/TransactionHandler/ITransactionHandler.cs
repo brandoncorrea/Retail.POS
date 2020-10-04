@@ -17,6 +17,7 @@ namespace Retail.POS.Common.TransactionHandler
         public int ItemCount { get; }
         public double NetTotal { get; }
         public double TaxTotal { get; }
+        public double GrossTotal { get; }
 
         public void AddItem(AddItemArgs args);
         public void VoidItem(AddItemArgs args);

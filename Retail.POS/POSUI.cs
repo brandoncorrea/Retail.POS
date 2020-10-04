@@ -138,25 +138,25 @@ namespace Retail.POS
             
             if (item.Weighed)
                 posDescription = $"{item.Description} " +
-                    $"${item.SellPrice} @ " +
-                    $"{args.Weight} lbs " +
+                    $"${item.SellPrice:0.00} @ " +
+                    $"{args.Weight:0.00} lbs " +
                     $"${Math.Round(item.SellPrice * args.Weight, 2)}";
             else if (args.Quantity > 1 && item.SellMultiple == 1)
                 posDescription = $"{item.Description} " +
                     $"{args.Quantity} @ " +
-                    $"${item.SellPrice} " +
+                    $"${item.SellPrice:0.00} " +
                     $"${Math.Round(item.SellPrice * args.Quantity, 2)}";
             else if (args.Quantity > 1 && item.SellMultiple > 1)
                 posDescription = $"{item.Description} " +
                     $"{args.Quantity} @" +
                     $"{item.SellMultiple} for " +
-                    $"${item.SellPrice} " +
+                    $"${item.SellPrice:0.00} " +
                     $"${Math.Round(item.SellPrice / item.SellMultiple, 2) * args.Quantity}";
             else if (args.Quantity == 1 && item.SellMultiple == 1)
-                posDescription = $"{item.Description} {item.SellPrice}";
+                posDescription = $"{item.Description} {item.SellPrice:0.00}";
             else
                 posDescription = $"{item.Description} " +
-                    $"{item.SellPrice} 1 @ {item.SellMultiple} for {item.SellPrice}";
+                    $"{item.SellPrice:0.00} 1 @ {item.SellMultiple} for {item.SellPrice:0.00}";
 
             ItemEntryScreen.Items.Add(posDescription);
             HighlightLastLine();
@@ -232,6 +232,7 @@ namespace Retail.POS
         private void ResetTextViews()
         {
             ItemCountLabel.Text = $"{_transactionHandler.ItemCount} Items";
+            GrossTotalLabel.Text = $"${_transactionHandler.GrossTotal:0.00}";
             ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
             CurrentQuantity = 1;
             ItemEntryBox.Clear();
@@ -246,7 +247,7 @@ namespace Retail.POS
 
         private void IdleTimer_Tick(object sender, EventArgs e)
         {
-            WeightValueLabel.Text = _scale.CurrentWeight.ToString("0.00");
+            WeightLabel.Text = $"{_scale.CurrentWeight:0.00} LB";
         }
     }
 }

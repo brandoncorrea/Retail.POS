@@ -41,15 +41,15 @@
             this.Key_3 = new System.Windows.Forms.Button();
             this.Key_Qty = new System.Windows.Forms.Button();
             this.ItemEntryBox = new System.Windows.Forms.TextBox();
-            this.ItemCountLabel = new System.Windows.Forms.Label();
             this.ItemEntryBoxLabel = new System.Windows.Forms.Label();
             this.Key_Back = new System.Windows.Forms.Button();
             this.Key_Cancel = new System.Windows.Forms.Button();
             this.Key_Enter = new System.Windows.Forms.Button();
             this.Key_0 = new System.Windows.Forms.Button();
             this.ItemEntryScreen = new System.Windows.Forms.ListBox();
+            this.ItemCountLabel = new System.Windows.Forms.Label();
+            this.GrossTotalLabel = new System.Windows.Forms.Label();
             this.WeightLabel = new System.Windows.Forms.Label();
-            this.WeightValueLabel = new System.Windows.Forms.Label();
             this.IdleTimer = new System.Windows.Forms.Timer(this.components);
             this.TableLayoutPanelMain.SuspendLayout();
             this.SuspendLayout();
@@ -59,37 +59,42 @@
             this.TableLayoutPanelMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TableLayoutPanelMain.ColumnCount = 5;
-            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
-            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
-            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
-            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
-            this.TableLayoutPanelMain.Controls.Add(this.Key_4, 1, 3);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_9, 3, 2);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_8, 2, 2);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_7, 1, 2);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_5, 2, 3);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_6, 3, 3);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_1, 1, 4);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_2, 2, 4);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_3, 3, 4);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_Qty, 4, 2);
-            this.TableLayoutPanelMain.Controls.Add(this.ItemEntryBox, 0, 4);
-            this.TableLayoutPanelMain.Controls.Add(this.ItemCountLabel, 0, 2);
-            this.TableLayoutPanelMain.Controls.Add(this.ItemEntryBoxLabel, 0, 3);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_Back, 4, 3);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_Cancel, 4, 4);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_Enter, 3, 5);
-            this.TableLayoutPanelMain.Controls.Add(this.Key_0, 2, 5);
+            this.TableLayoutPanelMain.ColumnCount = 7;
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 23.33233F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 23.33233F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 23.33233F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.500751F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.500751F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.500751F));
+            this.TableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 7.500751F));
+            this.TableLayoutPanelMain.Controls.Add(this.Key_4, 3, 6);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_9, 5, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_8, 4, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_7, 3, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_5, 4, 6);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_6, 5, 6);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_1, 3, 7);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_2, 4, 7);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_3, 5, 7);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_Qty, 6, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.ItemEntryBox, 0, 7);
+            this.TableLayoutPanelMain.Controls.Add(this.ItemEntryBoxLabel, 0, 6);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_Back, 6, 6);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_Cancel, 6, 7);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_Enter, 5, 8);
+            this.TableLayoutPanelMain.Controls.Add(this.Key_0, 4, 8);
             this.TableLayoutPanelMain.Controls.Add(this.ItemEntryScreen, 0, 0);
-            this.TableLayoutPanelMain.Controls.Add(this.WeightLabel, 2, 0);
-            this.TableLayoutPanelMain.Controls.Add(this.WeightValueLabel, 2, 1);
+            this.TableLayoutPanelMain.Controls.Add(this.ItemCountLabel, 2, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.GrossTotalLabel, 1, 5);
+            this.TableLayoutPanelMain.Controls.Add(this.WeightLabel, 0, 5);
             this.TableLayoutPanelMain.Location = new System.Drawing.Point(11, 12);
             this.TableLayoutPanelMain.Name = "TableLayoutPanelMain";
-            this.TableLayoutPanelMain.RowCount = 6;
-            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 22.64678F));
-            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 47.2507F));
+            this.TableLayoutPanelMain.RowCount = 9;
+            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14F));
+            this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 14F));
             this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
             this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
             this.TableLayoutPanelMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7.5F));
@@ -260,6 +265,7 @@
             // ItemEntryBox
             // 
             this.ItemEntryBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanelMain.SetColumnSpan(this.ItemEntryBox, 3);
             this.ItemEntryBox.Enabled = false;
             this.ItemEntryBox.Font = new System.Drawing.Font("Segoe UI", 24F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.ItemEntryBox.Location = new System.Drawing.Point(3, 913);
@@ -268,21 +274,11 @@
             this.ItemEntryBox.Size = new System.Drawing.Size(1053, 93);
             this.ItemEntryBox.TabIndex = 0;
             // 
-            // ItemCountLabel
-            // 
-            this.ItemCountLabel.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.ItemCountLabel.AutoSize = true;
-            this.ItemCountLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.ItemCountLabel.Location = new System.Drawing.Point(929, 767);
-            this.ItemCountLabel.Name = "ItemCountLabel";
-            this.ItemCountLabel.Size = new System.Drawing.Size(127, 45);
-            this.ItemCountLabel.TabIndex = 4;
-            this.ItemCountLabel.Text = "0 Items";
-            // 
             // ItemEntryBoxLabel
             // 
             this.ItemEntryBoxLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.ItemEntryBoxLabel.AutoSize = true;
+            this.TableLayoutPanelMain.SetColumnSpan(this.ItemEntryBoxLabel, 3);
             this.ItemEntryBoxLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.ItemEntryBoxLabel.Location = new System.Drawing.Point(3, 847);
             this.ItemEntryBoxLabel.Name = "ItemEntryBoxLabel";
@@ -360,39 +356,49 @@
             this.ItemEntryScreen.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanelMain.SetColumnSpan(this.ItemEntryScreen, 3);
             this.ItemEntryScreen.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.ItemEntryScreen.FormattingEnabled = true;
             this.ItemEntryScreen.ItemHeight = 45;
             this.ItemEntryScreen.Location = new System.Drawing.Point(0, 0);
             this.ItemEntryScreen.Margin = new System.Windows.Forms.Padding(0);
             this.ItemEntryScreen.Name = "ItemEntryScreen";
-            this.TableLayoutPanelMain.SetRowSpan(this.ItemEntryScreen, 2);
+            this.TableLayoutPanelMain.SetRowSpan(this.ItemEntryScreen, 5);
             this.ItemEntryScreen.Size = new System.Drawing.Size(1059, 724);
             this.ItemEntryScreen.TabIndex = 3;
             // 
+            // ItemCountLabel
+            // 
+            this.ItemCountLabel.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.ItemCountLabel.AutoSize = true;
+            this.ItemCountLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.ItemCountLabel.Location = new System.Drawing.Point(929, 767);
+            this.ItemCountLabel.Name = "ItemCountLabel";
+            this.ItemCountLabel.Size = new System.Drawing.Size(127, 45);
+            this.ItemCountLabel.TabIndex = 4;
+            this.ItemCountLabel.Text = "0 Items";
+            // 
+            // GrossTotalLabel
+            // 
+            this.GrossTotalLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.GrossTotalLabel.AutoSize = true;
+            this.GrossTotalLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.GrossTotalLabel.Location = new System.Drawing.Point(479, 767);
+            this.GrossTotalLabel.Name = "GrossTotalLabel";
+            this.GrossTotalLabel.Size = new System.Drawing.Size(100, 45);
+            this.GrossTotalLabel.TabIndex = 4;
+            this.GrossTotalLabel.Text = "$0.00";
+            // 
             // WeightLabel
             // 
-            this.WeightLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.WeightLabel.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.WeightLabel.AutoSize = true;
-            this.TableLayoutPanelMain.SetColumnSpan(this.WeightLabel, 2);
-            this.WeightLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 13.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.WeightLabel.Location = new System.Drawing.Point(1188, 193);
+            this.WeightLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.WeightLabel.Location = new System.Drawing.Point(3, 767);
             this.WeightLabel.Name = "WeightLabel";
-            this.WeightLabel.Size = new System.Drawing.Size(194, 50);
-            this.WeightLabel.TabIndex = 5;
-            this.WeightLabel.Text = "Weight LB";
-            // 
-            // WeightValueLabel
-            // 
-            this.WeightValueLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.WeightValueLabel.AutoSize = true;
-            this.TableLayoutPanelMain.SetColumnSpan(this.WeightValueLabel, 2);
-            this.WeightValueLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 13.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.WeightValueLabel.Location = new System.Drawing.Point(1238, 243);
-            this.WeightValueLabel.Name = "WeightValueLabel";
-            this.WeightValueLabel.Size = new System.Drawing.Size(94, 50);
-            this.WeightValueLabel.TabIndex = 5;
-            this.WeightValueLabel.Text = "0.00";
+            this.WeightLabel.Size = new System.Drawing.Size(126, 45);
+            this.WeightLabel.TabIndex = 4;
+            this.WeightLabel.Text = "0.00 LB";
             // 
             // IdleTimer
             // 
@@ -437,8 +443,8 @@
         private System.Windows.Forms.Button Key_Back;
         private System.Windows.Forms.Button Key_Cancel;
         private System.Windows.Forms.Timer IdleTimer;
+        private System.Windows.Forms.Label GrossTotalLabel;
         private System.Windows.Forms.Label WeightLabel;
-        private System.Windows.Forms.Label WeightValueLabel;
     }
 }
 
