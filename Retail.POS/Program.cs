@@ -2,7 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Retail.POS.Common.Logging;
-using Retail.POS.Common.Models.LineItems;
 using Retail.POS.Common.Repositories;
 using Retail.POS.Common.Scale;
 using Retail.POS.Common.TransactionHandler;
@@ -45,10 +44,7 @@ namespace Retail.POS
                 .AddScoped<ILogger, PosLogger>()
                 .AddScoped<IItemRepository, ItemRepository>()
                 .AddScoped<IScale, PosScale>()
-                .AddScoped<ITransactionHandler, TransactionHandler>()
-                //.AddScoped<IBusinessLayer, CBusinessLayer>()
-                //.AddScoped<IDataAccessLayer, CDataAccessLayer>()
-                ;
+                .AddScoped<ITransactionHandler, TransactionHandler>();
         }
     }
 }

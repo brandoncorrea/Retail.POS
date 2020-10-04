@@ -11,15 +11,13 @@ namespace Retail.POS.Common.TransactionHandler
     public class TransactionHandler : ITransactionHandler
     {
         // Class Properties
-        public int ItemCount { get => Items.Select(i => i.Quantity).Sum(); }
-        private List<LineItem> Items { get; set; }
-        private List<LineItem> Refunds { get; set; }
+        public int ItemCount => Items.Select(i => i.Quantity).Sum();
         public double GrossTotal => NetTotal + TaxTotal;
         public double NetTotal
         {
             get
             {
-                return Items
+                var addNet = Items
                     .Select(i =>
                     {
                         var unitPrice = Math.Round(i.Item.SellPrice / i.Item.SellMultiple, 2);
@@ -28,18 +26,39 @@ namespace Retail.POS.Common.TransactionHandler
                         return unitPrice * i.Quantity;
                     })
                     .Sum();
+
+                var refundNet = Refunds
+                    .Select(i =>
+                    {
+                        var unitPrice = Math.Round(i.Item.SellPrice / i.Item.SellMultiple, 2);
+                        if (i.Item.Weighed)
+                            return Math.Round(unitPrice * i.Weight, 2) * i.Quantity;
+                        return unitPrice * i.Quantity;
+                    })
+                    .Sum();
+
+                return addNet - refundNet;
             }
         }
         public double TaxTotal
         {
             get
             {
-                return Items
+                var addTaxTotal = Items
                     .Select(i => CalculateTax(i))
                     .Sum();
+                var refundTaxTotal = Refunds
+                    .Select(i => CalculateTax(i))
+                    .Sum();
+
+                return addTaxTotal - refundTaxTotal;
             }
         }
 
+        // Item lists
+        private List<LineItem> Refunds { get; set; }
+        private List<LineItem> Items { get; set; }
+        
         // Dependencies
         private readonly IConfiguration _config;
         private readonly IItemRepository _itemRepository;
@@ -64,44 +83,55 @@ namespace Retail.POS.Common.TransactionHandler
             Refunds = new List<LineItem>();
         }
 
-        public void AddItem(object id)
+        public void AddItem(AddItemArgs args)
         {
+            var item = _itemRepository.Get(args.ItemId);
             var lineItem = new LineItem()
             {
-                Item = _itemRepository.Get(id),
-                Quantity = 1,
-                Weight = 0
+                Item = item,
+                Quantity = args.Quantity,
+                Weight = args.Weight,
             };
-            AddLineItem(id, lineItem);
+            AddLineItem(args.ItemId, lineItem);
         }
-        public void AddItem(object id, double weight)
+        public void VoidItem(AddItemArgs args)
         {
+            var item = _itemRepository.Get(args.ItemId);
+            var lastIndex = Items.FindLastIndex(i => i.Item.ItemId == item.ItemId);
             var lineItem = new LineItem()
             {
-                Item = _itemRepository.Get(id),
-                Quantity = 1,
-                Weight = weight,
+                Item = item,
+                Quantity = args.Quantity,
+                Weight = args.Weight,
             };
-            AddLineItem(id, lineItem);
-        }
-        public void AddItem(object id, int quantity)
-        {
-            var lineItem = new LineItem()
-            {
-                Item = _itemRepository.Get(id),
-                Quantity = quantity,
-                Weight = 0,
-            };
-            AddLineItem(id, lineItem);
-        }
 
-        public void VoidItem(object id)
-        {
-            var itemId = id.ToString();
-            var lastIndex = Items.FindLastIndex(i => i.Item.ItemId == itemId);
-            VoidItemAtIndex(itemId, lastIndex);
+            if (item.Weighed)
+            {
+                VoidItem(args.ItemId, args.Weight);
+                ItemVoided.Invoke(this, new ItemEventArgs(lineItem));
+            }
+            else if (lastIndex < 0)
+                VoidError.Invoke(this, new ItemNotFoundEventArgs(args.ItemId));
+            else if (args.Quantity < 1)
+            {
+                var errorArgs = new ItemErrorEventArgs()
+                {
+                    ItemId = args.ItemId,
+                    Message = "Quantity must be a positive number.",
+                };
+                VoidError.Invoke(this, errorArgs);
+            }
+            else if (args.Quantity == 1)
+            {
+                Items[lastIndex].Quantity -= 1;
+                if (Items[lastIndex].Quantity < 1)
+                    Items.RemoveAt(lastIndex);
+                ItemVoided.Invoke(this, new ItemEventArgs(lineItem));
+            }
+            else
+                VoidItem(args.ItemId, args.Quantity);
         }
-        public void VoidItem(object id, int quantity)
+        private void VoidItem(object id, int quantity)
         {
             var itemId = id.ToString();
             var totalInOrder = Items
@@ -121,55 +151,87 @@ namespace Retail.POS.Common.TransactionHandler
             else
                 VoidQuantityItems(itemId, quantity);
         }
-        public void VoidItem(object id, double weight)
+        private void VoidItem(object id, double weight)
         {
             var itemId = id.ToString();
             var lastIndex = Items
                 .FindLastIndex(i => i.Item.ItemId == itemId && i.Weight == weight);
             VoidItemAtIndex(itemId, lastIndex);
         }
-
-        public void RefundItem(object id)
+        public void RefundItem(AddItemArgs args)
         {
-            var item = _itemRepository.Get(id);
-            if (item == null)
+            var lineItem = new LineItem()
             {
-                var args = new ItemNotFoundEventArgs(id.ToString());
-                RefundError.Invoke(this, args);
+                Item = _itemRepository.Get(args.ItemId),
+                Quantity = args.Quantity,
+                Weight = args.Weight,
+            };
+            RefundLineItem(args.ItemId, lineItem);
+        }
+        public void VoidRefund(AddItemArgs args)
+        {
+            var item = _itemRepository.Get(args.ItemId);
+            var lastIndex = Refunds.FindLastIndex(i =>
+            {
+                if (item.Weighed)
+                    return i.Item.ItemId == args.ItemId &&
+                    i.Weight == args.Weight;
+                return i.Item.ItemId == args.ItemId;
+            });
+
+            var lineItem = new LineItem()
+            {
+                Item = item,
+                Quantity = args.Quantity,
+                Weight = args.Weight,
+            };
+
+            if (lastIndex < 0)
+                VoidError.Invoke(this, new ItemNotFoundEventArgs(args.ItemId));
+            else if (item.Weighed)
+            {
+                Refunds.RemoveAt(lastIndex);
+                RefundVoided.Invoke(this, new ItemEventArgs(lineItem));
+            }
+            else if (args.Quantity < 1)
+            {
+                var errorArgs = new ItemErrorEventArgs()
+                {
+                    ItemId = item.ItemId,
+                    Message = "Quantity must be a positive number.",
+                };
+                VoidRefundError.Invoke(this, errorArgs);
+            }
+            else if (args.Quantity == 1)
+            {
+                Refunds[lastIndex].Quantity -= 1;
+                if (Refunds[lastIndex].Quantity < 1)
+                    Refunds.RemoveAt(lastIndex);
+                RefundVoided.Invoke(this, new ItemEventArgs(lineItem));
             }
             else
-            {
-                var lineItem = new LineItem()
-                {
-                    Item = item,
-                    Quantity = 1,
-                    Weight = 0,
-                };
-                Refunds.Add(lineItem);
-                var args = new ItemEventArgs(lineItem);
-                ItemRefunded.Invoke(this, args);
-            }
-        }
-        public void RefundItem(object id, int quantity)
-        {
-            throw new NotImplementedException();
-        }
-        public void RefundItem(object id, double weight)
-        {
-            throw new NotImplementedException();
+                VoidRefund(args.ItemId, args.Quantity);
         }
 
-        public void VoidRefund(object id)
+        private void VoidRefund(object id, int quantity)
         {
-            throw new NotImplementedException();
-        }
-        public void VoidRefund(object id, int quantity)
-        {
-            throw new NotImplementedException();
-        }
-        public void VoidRefund(object id, double weight)
-        {
-            throw new NotImplementedException();
+            var itemId = id.ToString();
+            var totalInOrder = Refunds
+                .Where(i => i.Item.ItemId == itemId)
+                .Select(i => i.Quantity)
+                .Sum();
+
+            if (totalInOrder < quantity)
+            {
+                var args = new ItemErrorEventArgs()
+                {
+                    ItemId = itemId,
+                    Message = "Quantity exceeded refunds in transaction.",
+                };
+                VoidRefundError.Invoke(this, args);
+            }
+            else
+                VoidQuantityRefunds(itemId, quantity);
         }
 
         #region Helpers
@@ -188,7 +250,23 @@ namespace Retail.POS.Common.TransactionHandler
                 ItemAdded.Invoke(this, args);
             }
         }
-        
+
+        // Refunds a LineItem, adding it to the Refunds list
+        private void RefundLineItem(object id, LineItem lineItem)
+        {
+            if (lineItem.Item == null)
+            {
+                var args = new ItemNotFoundEventArgs(id.ToString());
+                RefundError.Invoke(this, args);
+            }
+            else
+            {
+                Refunds.Add(lineItem);
+                var args = new ItemEventArgs(lineItem);
+                ItemRefunded.Invoke(this, args);
+            }
+        }
+
         // Voids an item from the Items list
         private void VoidItemAtIndex(string itemId, int index)
         {
@@ -238,7 +316,36 @@ namespace Retail.POS.Common.TransactionHandler
             var args = new ItemEventArgs(lineItem);
             ItemVoided.Invoke(this, args);
         }
-        
+
+        // Removes items from the Refunds list until the quantity has been reached
+        private void VoidQuantityRefunds(string itemId, int quantity)
+        {
+            var item = Refunds
+                .Select(i => i.Item)
+                .FirstOrDefault(i => i.ItemId == itemId);
+
+            var lineItem = new LineItem()
+            {
+                Item = item,
+                Quantity = quantity,
+                Weight = 0
+            };
+
+            while (quantity > 0)
+            {
+                var lastIndex = Refunds.FindLastIndex(i => i.Item.ItemId == itemId);
+                var qtyAtIndex = Refunds[lastIndex].Quantity;
+                if (quantity >= qtyAtIndex)
+                    Refunds.RemoveAt(lastIndex);
+                else
+                    Refunds[lastIndex].Quantity -= quantity;
+                quantity -= qtyAtIndex;
+            }
+
+            var args = new ItemEventArgs(lineItem);
+            RefundVoided.Invoke(this, args);
+        }
+
         // Returns the tax total for a given item
         private double CalculateTax(LineItem lineItem)
         {

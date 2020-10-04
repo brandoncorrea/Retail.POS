@@ -1,10 +1,9 @@
 [
   {
-    "GTIN": "0004141500163",
+    "ItemId": "0004141500163",
     "Description": "PUBLIX WHOLE MILK",
-    "Price": 3.49,
-    "Weight": 0,
-    "Quantity": 0,
+    "SellPrice": 3.49,
+    "SellMultiple": 1,
     "Weighed": false,
     "Tax1": false,
     "Tax2": false,
@@ -13,11 +12,10 @@
     "FoodStamp": true
   },
   {
-    "GTIN": "0004141500123",
+    "ItemId": "0004141500123",
     "Description": "PUBLIX SPAGHETTI",
-    "Price": 1.99,
-    "Weight": 0,
-    "Quantity": 0,
+    "SellPrice": 1.99,
+    "SellMultiple": 1,
     "Weighed": false,
     "Tax1": false,
     "Tax2": false,
@@ -26,11 +24,10 @@
     "FoodStamp": true
   },
   {
-    "GTIN": "0000000004011",
+    "ItemId": "0000000004011",
     "Description": "BANANAS",
-    "Price": 0.69,
-    "Weight": 0,
-    "Quantity": 0,
+    "SellPrice": 0.69,
+    "SellMultiple": 1,
     "Weighed": true,
     "Tax1": false,
     "Tax2": false,
@@ -39,11 +36,10 @@
     "FoodStamp": true
   },
   {
-    "GTIN": "0000000094011",
+    "ItemId": "0000000094011",
     "Description": "ORGANIC BANANAS",
-    "Price": 0.89,
-    "Weight": 0,
-    "Quantity": 0,
+    "SellPrice": 0.89,
+    "SellMultiple": 1,
     "Weighed": true,
     "Tax1": false,
     "Tax2": false,

@@ -35,7 +35,13 @@ namespace Retail.POS
 
             // Initialize transaction handler
             _transactionHandler.ItemAdded += OnItemAdded;
+            _transactionHandler.ItemVoided += OnItemVoided;
             _transactionHandler.AddError += OnAddError;
+            _transactionHandler.ItemRefunded += OnItemRefunded;
+            _transactionHandler.RefundError += OnRefundError;
+            _transactionHandler.RefundVoided += OnRefundVoided;
+            _transactionHandler.VoidError += OnVoidError;
+            _transactionHandler.VoidRefundError += OnVoidRefundError;
 
             _logger.LogInformation("Initializing POS.");
             InitializeComponent();
@@ -114,40 +120,53 @@ namespace Retail.POS
             if (gtin.Length == 0)
                 return;
 
-            // Show item on POS
-            var item = _itemRepository.Get(gtin);
-            //item.Quantity = CurrentQuantity;
-            //item.Weight = item.Weighed ? _scale.GetWeight() : 0;
-            _transactionHandler.AddItem(item);
+            var args = new AddItemArgs()
+            {
+                ItemId = gtin,
+                Quantity = CurrentQuantity,
+                Weight = _scale.CurrentWeight,
+                PriceOverride = false,
+            };
+            _transactionHandler.AddItem(args);
         }
 
+        #region Event Handlers
         private void OnItemAdded(object sender, ItemEventArgs args)
         {
             var item = args.Item;
-            string posDescription = $"{item.Description} ${item.SellPrice}";
+            string posDescription;
+            
+            if (item.Weighed)
+                posDescription = $"{item.Description} " +
+                    $"${item.SellPrice} @ " +
+                    $"{args.Weight} lbs " +
+                    $"${Math.Round(item.SellPrice * args.Weight, 2)}";
+            else if (args.Quantity > 1 && item.SellMultiple == 1)
+                posDescription = $"{item.Description} " +
+                    $"{args.Quantity} @ " +
+                    $"${item.SellPrice} " +
+                    $"${Math.Round(item.SellPrice * args.Quantity, 2)}";
+            else if (args.Quantity > 1 && item.SellMultiple > 1)
+                posDescription = $"{item.Description} " +
+                    $"{args.Quantity} @" +
+                    $"{item.SellMultiple} for " +
+                    $"${item.SellPrice} " +
+                    $"${Math.Round(item.SellPrice / item.SellMultiple, 2) * args.Quantity}";
+            else if (args.Quantity == 1 && item.SellMultiple == 1)
+                posDescription = $"{item.Description} {item.SellPrice}";
+            else
+                posDescription = $"{item.Description} " +
+                    $"{item.SellPrice} 1 @ {item.SellMultiple} for {item.SellPrice}";
+
             ItemEntryScreen.Items.Add(posDescription);
-
-            // Highlight last line
-            int itemCount = _transactionHandler.ItemCount;
-            ItemEntryScreen.SetSelected(itemCount - 1, true);
-
-            // Update text views
-            ItemCountLabel.Text = $"{itemCount} Items";
-            ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
-            CurrentQuantity = 1;
-            ItemEntryBox.Clear();
+            HighlightLastLine();
+            ResetTextViews();
         }
 
         private void OnAddError(object sender, ItemErrorEventArgs args)
         {
             MessageBox.Show(args.Message);
-
-            // Update text views
-            int itemCount = ItemEntryScreen.Items.Count;
-            ItemCountLabel.Text = $"{itemCount} Items";
-            ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
-            CurrentQuantity = 1;
-            ItemEntryBox.Clear();
+            ResetTextViews();
         }
 
         private void OnItemVoided(object sender, ItemEventArgs args)
@@ -158,13 +177,76 @@ namespace Retail.POS
                 "Void item",
                $"  {item.Description} -${item.SellPrice}"
             };
-
-
+            ItemEntryScreen.Items.AddRange(posLines);
+            HighlightLastLine();
+            ResetTextViews();
         }
+
+        private void OnItemRefunded(object sender, ItemEventArgs args)
+        {
+            var item = args.Item;
+            var posLines = new[]
+            {
+                "Refund item",
+               $"  {item.Description} -${item.SellPrice}",
+            };
+            ItemEntryScreen.Items.AddRange(posLines);
+            HighlightLastLine();
+            ResetTextViews();
+        }
+
+        private void OnRefundError(object sender, ItemErrorEventArgs args)
+        {
+            MessageBox.Show(args.Message);
+            ResetTextViews();
+        }
+        
+        private void OnRefundVoided(object sender, ItemEventArgs args)
+        {
+            var item = args.Item;
+            var posLines = new[]
+            {
+                "Void refund",
+               $"  {item.Description} ${item.SellPrice}"
+            };
+            ItemEntryScreen.Items.AddRange(posLines);
+            HighlightLastLine();
+            ResetTextViews();
+        }
+
+        private void OnVoidError(object sender, ItemErrorEventArgs args)
+        {
+            MessageBox.Show(args.Message);
+            ResetTextViews();
+        }
+
+        private void OnVoidRefundError(object sender, ItemErrorEventArgs args)
+        {
+            MessageBox.Show(args.Message);
+            ResetTextViews();
+        }
+
+        #endregion
+
+        #region Helpers
+        private void ResetTextViews()
+        {
+            ItemCountLabel.Text = $"{_transactionHandler.ItemCount} Items";
+            ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
+            CurrentQuantity = 1;
+            ItemEntryBox.Clear();
+        }
+
+        private void HighlightLastLine()
+        {
+            var itemCount = ItemEntryScreen.Items.Count;
+            ItemEntryScreen.SetSelected(itemCount - 1, true);
+        }
+        #endregion
 
         private void IdleTimer_Tick(object sender, EventArgs e)
         {
-            WeightValueLabel.Text = _scale.GetWeight().ToString("0.00");
+            WeightValueLabel.Text = _scale.CurrentWeight.ToString("0.00");
         }
     }
 }

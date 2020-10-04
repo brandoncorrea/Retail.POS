@@ -2,6 +2,6 @@
 {
     public interface IScale
     {
-        public decimal GetWeight();
+        public double CurrentWeight { get; }
     }
 }

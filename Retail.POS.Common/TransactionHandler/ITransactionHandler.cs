@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Retail.POS.Common.Models;
+using System;
 
 namespace Retail.POS.Common.TransactionHandler
 {
@@ -16,21 +17,10 @@ namespace Retail.POS.Common.TransactionHandler
         public int ItemCount { get; }
         public double NetTotal { get; }
         public double TaxTotal { get; }
-        
-        public void AddItem(object id);
-        public void AddItem(object id, int quantity);
-        public void AddItem(object id, double weight);
-        
-        public void VoidItem(object id);
-        public void VoidItem(object id, int quantity);
-        public void VoidItem(object id, double weight);
-        
-        public void RefundItem(object id);
-        public void RefundItem(object id, int quantity);
-        public void RefundItem(object id, double weight);
 
-        public void VoidRefund(object id);
-        public void VoidRefund(object id, int quantity);
-        public void VoidRefund(object id, double weight);
+        public void AddItem(AddItemArgs args);
+        public void VoidItem(AddItemArgs args);
+        public void RefundItem(AddItemArgs args);
+        public void VoidRefund(AddItemArgs args);
     }
 }

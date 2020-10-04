@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Retail.POS.Common.Models;
 using Retail.POS.Common.Models.LineItems;
 using Retail.POS.Common.TransactionHandler;
 using Retail.POS.Tests.Helpers;
@@ -34,7 +35,16 @@ namespace Retail.POS.Tests.TransactionHandlerTests
                 double expectedTax = TransactionHandlerHelper.GetTaxAmount(item, weight);
 
                 // Act
-                handler.AddItem(item.ItemId, weight);
+                var args = new AddItemArgs()
+                {
+                    ItemId = item.ItemId,
+                    PriceOverride = false,
+                    Quantity = 1,
+                    SellMultiple = item.SellMultiple,
+                    Weight = weight,
+                    SellPrice = item.SellPrice
+                };
+                handler.AddItem(args);
                 
                 // Assert
                 Assert.AreEqual(expectedTax, handler.TaxTotal);
@@ -56,7 +66,16 @@ namespace Retail.POS.Tests.TransactionHandlerTests
                 double expectedTax = TransactionHandlerHelper.GetTaxAmount(item);
 
                 // Act
-                handler.AddItem(item.ItemId);
+                var args = new AddItemArgs()
+                {
+                    ItemId = item.ItemId,
+                    SellPrice = item.SellPrice,
+                    SellMultiple = item.SellMultiple,
+                    Quantity = 1,
+                    Weight = 0,
+                    PriceOverride = false,
+                };
+                handler.AddItem(args);
 
                 // Assert
                 Assert.AreEqual(expectedTax, handler.TaxTotal);
@@ -79,7 +98,16 @@ namespace Retail.POS.Tests.TransactionHandlerTests
                 double expectedTax = TransactionHandlerHelper.GetTaxAmount(item, quantity);
 
                 // Act
-                handler.AddItem(item.ItemId, quantity);
+                var args = new AddItemArgs()
+                {
+                    ItemId = item.ItemId,
+                    SellPrice = item.SellPrice,
+                    SellMultiple = item.SellMultiple,
+                    Quantity = quantity,
+                    Weight = 0,
+                    PriceOverride = false,
+                };
+                handler.AddItem(args);
 
                 // Assert
                 Assert.AreEqual(expectedTax, handler.TaxTotal, 0001);
@@ -97,8 +125,17 @@ namespace Retail.POS.Tests.TransactionHandlerTests
             var expectedTax = TransactionHandlerHelper.GetTaxAmount(item) * 10;
 
             // Act
+            var args = new AddItemArgs()
+            {
+                ItemId = item.ItemId,
+                SellPrice = item.SellPrice,
+                SellMultiple = item.SellMultiple,
+                Quantity = 1,
+                Weight = 0,
+                PriceOverride = false,
+            };
             for (int i = 0; i < 10; i++)
-                Handler.AddItem(item.ItemId);
+                Handler.AddItem(args);
 
             // Assert
             Assert.AreEqual(expectedNet, Handler.NetTotal, 0.0001);
@@ -109,7 +146,11 @@ namespace Retail.POS.Tests.TransactionHandlerTests
         [Test]
         public void AddNotFoundItem()
         {
-            Handler.AddItem("0");
+            var args = new AddItemArgs()
+            {
+                ItemId = "0",
+            };
+            Handler.AddItem(args);
             Assert.AreEqual(0, Handler.NetTotal);
             Assert.AreEqual(0, Handler.ItemCount);
             Assert.AreEqual(0, Handler.GrossTotal);
@@ -129,10 +170,16 @@ namespace Retail.POS.Tests.TransactionHandlerTests
 
             foreach (var item in ItemRepository.Items)
             {
-                if (item.Weighed)
-                    Handler.AddItem(item.ItemId, 1.0);
-                else
-                    Handler.AddItem(item.ItemId);
+                var args = new AddItemArgs()
+                {
+                    ItemId = item.ItemId,
+                    SellPrice = item.SellPrice,
+                    SellMultiple = item.SellMultiple,
+                    Quantity = 1,
+                    Weight = 1.0,
+                    PriceOverride = false,
+                };
+                Handler.AddItem(args);
             }
 
             Assert.AreEqual(expectedNet, Handler.NetTotal, 0.0001);
