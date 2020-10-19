@@ -1,4 +1,4 @@
-﻿using Retail.POS.Common.Models.LineItems;
+﻿using Retail.POS.Common.Interfaces;
 using System;
 
 namespace Retail.POS.Tests.Helpers

@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Retail.POS.BL\Retail.POS.BL.csproj" />
     <ProjectReference Include="..\Retail.POS.Common\Retail.POS.Common.csproj" />
   </ItemGroup>
 

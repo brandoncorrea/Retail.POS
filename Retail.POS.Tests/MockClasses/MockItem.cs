@@ -1,6 +1,8 @@
-﻿namespace Retail.POS.Common.Models.LineItems
+﻿using Retail.POS.Common.Interfaces;
+
+namespace Retail.POS.Tests.MockClasses
 {
-    public class PosItem : IItem
+    public class MockItem : IItem
     {
         public string ItemId { get; set; }
         public string Description { get; set; }

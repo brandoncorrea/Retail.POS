@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Retail.POS.Common.Models.LineItems;
-using Retail.POS.Common.Repositories;
+using Retail.POS.Common.Interfaces;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace Retail.POS.Tests.MockClasses
         {
             var filePath = TestManager.Config.GetSection("MockSettings:ItemStoreLocation").Value;
             var jsonStr = File.ReadAllText(filePath);
-            Items = JsonConvert.DeserializeObject<PosItem[]>(jsonStr);
+            Items = JsonConvert.DeserializeObject<IItem[]>(jsonStr);
         }
 
         public IItem Get(object id)

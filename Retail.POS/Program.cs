@@ -2,12 +2,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Retail.POS.Common.Logging;
-using Retail.POS.Common.Repositories;
-using Retail.POS.Common.Scale;
-using Retail.POS.Common.TransactionHandler;
+using Retail.POS.Common.Interfaces;
 using System;
 using System.IO;
 using System.Windows.Forms;
+using Retail.POS.DL.Repositories;
+using Retail.POS.BL.Hardware;
+using Retail.POS.BL.Transaction;
 
 namespace Retail.POS
 {
@@ -43,8 +44,9 @@ namespace Retail.POS
                 .AddSingleton<IConfiguration>(configuration)
                 .AddScoped<ILogger, PosLogger>()
                 .AddScoped<IItemRepository, ItemRepository>()
-                .AddScoped<IScale, PosScale>()
-                .AddScoped<ITransactionHandler, TransactionHandler>();
+                .AddScoped<IScale, Scale>()
+                .AddScoped<ITransactionHandler, TransactionHandler>()
+                ;
         }
     }
 }

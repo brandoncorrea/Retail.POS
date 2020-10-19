@@ -1,6 +1,4 @@
-﻿using Retail.POS.Common.Models.LineItems;
-
-namespace Retail.POS.Common.Repositories
+﻿namespace Retail.POS.Common.Interfaces
 {
     public interface IItemRepository
     {
