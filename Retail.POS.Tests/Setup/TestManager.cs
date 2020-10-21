@@ -1,23 +1,27 @@
 ﻿using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
+using Retail.POS.BL;
+using Retail.POS.Common.Interfaces;
+using Retail.POS.Tests.MockClasses;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
-using System.Text;
 
 [SetUpFixture]
 public class TestManager
 {
-    public static IConfiguration Config { get; private set; }
+    public static IConfiguration MockConfig { get; private set; }
+    public static MockPaymentProcessor MockPaymentProcessor { get; private set; }
+    public static MockTransactionRepository MockTransactionRepository { get; private set; }
 
     [OneTimeSetUp]
     public void SetUp()
     {
-        Config = new ConfigurationBuilder()
+        MockConfig = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("Setup\\appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("Setup\\mockConfig.json", optional: false, reloadOnChange: false)
             .Build();
+        MockPaymentProcessor = new MockPaymentProcessor();
+        MockTransactionRepository = new MockTransactionRepository();
     }
 
     [OneTimeTearDown]
@@ -25,4 +29,17 @@ public class TestManager
     {
 
     }
+
+    public static ITransaction CreateTransaction() => new Transaction
+    (
+        MockConfig, 
+        MockPaymentProcessor
+    );
+
+    public static ITransactionHandler CreateTransactionHandler() => new TransactionHandler
+    (
+        MockConfig,
+        MockPaymentProcessor,
+        MockTransactionRepository
+    );
 }

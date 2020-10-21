@@ -23,7 +23,7 @@
     <None Update="MockClasses\mockItemStore.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Setup\appsettings.json">
+    <None Update="Setup\mockConfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

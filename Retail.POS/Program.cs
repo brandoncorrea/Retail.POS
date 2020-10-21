@@ -7,8 +7,7 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using Retail.POS.DL.Repositories;
-using Retail.POS.BL.Hardware;
-using Retail.POS.BL.Transaction;
+using Retail.POS.BL;
 
 namespace Retail.POS
 {
@@ -45,7 +44,7 @@ namespace Retail.POS
                 .AddScoped<ILogger, PosLogger>()
                 .AddScoped<IItemRepository, ItemRepository>()
                 .AddScoped<IScale, Scale>()
-                .AddScoped<ITransactionHandler, TransactionHandler>()
+                .AddScoped<ITransaction, Transaction>()
                 ;
         }
     }

@@ -1,7 +1,7 @@
 ﻿using Retail.POS.Common.Interfaces;
 using System;
 
-namespace Retail.POS.BL.Hardware
+namespace Retail.POS.BL
 {
     public class Scale : IScale
     {

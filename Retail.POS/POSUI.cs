@@ -11,6 +11,7 @@ namespace Retail.POS
     public partial class POSUI : Form
     {
         private int CurrentQuantity = 1;
+        private ITransaction CurrentTransaction { get; set; }
 
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
@@ -114,14 +115,14 @@ namespace Retail.POS
             };
             string json = JsonConvert.SerializeObject(item);
             IItem arg = JsonConvert.DeserializeObject<IItem>(json);
-            _transactionHandler.Add(arg, 1);
+            CurrentTransaction.Add(arg, 1);
         }
 
         #region Helpers
         private void ResetTextViews()
         {
-            ItemCountLabel.Text = $"{_transactionHandler.Items.Count()} Items";
-            GrossTotalLabel.Text = $"${_transactionHandler.GrossTotal:0.00}";
+            ItemCountLabel.Text = $"{CurrentTransaction.Items.Count()} Items";
+            GrossTotalLabel.Text = $"${CurrentTransaction.GrossTotal:0.00}";
             ItemEntryBoxLabel.Text = "Enter GTIN or Quantity";
             CurrentQuantity = 1;
             ItemEntryBox.Clear();

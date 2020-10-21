@@ -1,8 +1,6 @@
-﻿using Retail.POS.Common.Interfaces;
-
-namespace Retail.POS.Tests.MockClasses
+﻿namespace Retail.POS.Common.Models
 {
-    public class CashTender : ITender
+    public class Tender
     {
         public double Amount { get; set; }
         public string Description { get; set; }
@@ -10,5 +8,6 @@ namespace Retail.POS.Tests.MockClasses
         public object Details { get; set; }
         public string Reference { get; set; }
         public bool Succeeded { get; set; }
+        public bool Reversed { get; set; }
     }
 }
