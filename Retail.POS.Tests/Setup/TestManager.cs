@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Retail.POS.BL;
 using Retail.POS.Common.Interfaces;
 using Retail.POS.Tests.MockClasses;
-using System;
 using System.IO;
 
 [SetUpFixture]
@@ -34,12 +33,5 @@ public class TestManager
     (
         MockConfig, 
         MockPaymentProcessor
-    );
-
-    public static ITransactionHandler CreateTransactionHandler() => new TransactionHandler
-    (
-        MockConfig,
-        MockPaymentProcessor,
-        MockTransactionRepository
     );
 }

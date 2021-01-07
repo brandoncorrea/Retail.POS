@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows.Forms;
 using Retail.POS.DL.Repositories;
 using Retail.POS.BL;
+using Retail.POS.Common.Models;
 
 namespace Retail.POS
 {
@@ -22,29 +23,28 @@ namespace Retail.POS
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-
-            using ServiceProvider provider = services.BuildServiceProvider();
-            var posui = provider.GetRequiredService<POSUI>();
-            Application.Run(posui);
+            Application.Run(
+                ConfigureServices().
+                BuildServiceProvider().
+                GetRequiredService<POSUI>());
         }
 
-        private static void ConfigureServices(ServiceCollection services)
+        private static IServiceCollection ConfigureServices()
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                 .Build();
 
-            services
+            return new ServiceCollection()
                 .AddSingleton<POSUI>()
                 .AddSingleton<IConfiguration>(configuration)
                 .AddScoped<ILogger, PosLogger>()
                 .AddScoped<IItemRepository, ItemRepository>()
                 .AddScoped<IScale, Scale>()
                 .AddScoped<ITransaction, Transaction>()
+                .AddScoped<ITransactionRepository, TransactionRepository>()
+                .AddScoped<IPaymentProcessor, PaymentProcessor>()
                 ;
         }
     }

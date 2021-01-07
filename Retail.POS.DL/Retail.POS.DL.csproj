@@ -8,4 +8,10 @@
     <ProjectReference Include="..\Retail.POS.Common\Retail.POS.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Repositories\itemStore.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

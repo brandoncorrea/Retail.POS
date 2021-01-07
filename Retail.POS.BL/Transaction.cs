@@ -52,6 +52,13 @@ namespace Retail.POS.BL
                 AddItemQuantity(item, quantity);
         }
 
+        public void Void(IItem item, double quantity)
+        {
+            int itemIndex = _items.IndexOf(item);
+            if (itemIndex >= 0)
+                _items.RemoveAt(itemIndex);
+        }
+
         public void AddTender(string method, double amount)
         {
             var tender = _paymentProcessor.ProcessPayment(method, amount);
@@ -64,13 +71,6 @@ namespace Retail.POS.BL
                 RefundWeighedItem(item, quantity);
             else
                 RefundItemQuantity(item, quantity);
-        }
-
-        public void Void(IItem item, double quantity)
-        {
-            int itemIndex = _items.IndexOf(item);
-            if (itemIndex >= 0)
-                _items.RemoveAt(itemIndex);
         }
 
         public void VoidTender(string reference)

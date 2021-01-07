@@ -1,36 +1,41 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Retail.POS.Common.Interfaces;
 using System;
 using System.Linq;
 using System.Windows.Forms;
+using Retail.POS.Common.Models;
+using Retail.POS.BL;
 
 namespace Retail.POS
 {
     public partial class POSUI : Form
     {
         private int CurrentQuantity = 1;
+
         private ITransaction CurrentTransaction { get; set; }
 
         private readonly IConfiguration _config;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepository;
         private readonly IScale _scale;
-        private readonly ITransactionHandler _transactionHandler;
+        private readonly ITransactionRepository _transactionRepository;
+        private readonly IPaymentProcessor _paymentProcessor;
 
         public POSUI(
             IConfiguration config,
             ILogger logger,
             IItemRepository itemRepository,
             IScale scale,
-            ITransactionHandler transactionHandler)
+            ITransactionRepository transactionRepository,
+            IPaymentProcessor paymentProcessor)
         {
             _config = config;
             _logger = logger;
             _itemRepository = itemRepository;
             _scale = scale;
-            _transactionHandler = transactionHandler;
+            _transactionRepository = transactionRepository;
+            _paymentProcessor = paymentProcessor;
 
             _logger.LogInformation("Initializing POS.");
             InitializeComponent();
@@ -109,13 +114,15 @@ namespace Retail.POS
             if (gtin.Length == 0)
                 return;
 
-            var item = new
+            var item = new Item
             {
                 ItemId = gtin
             };
-            string json = JsonConvert.SerializeObject(item);
-            IItem arg = JsonConvert.DeserializeObject<IItem>(json);
-            CurrentTransaction.Add(arg, 1);
+
+            if (CurrentTransaction == null)
+                CurrentTransaction = new Transaction(_config, _paymentProcessor);
+
+            CurrentTransaction.Add(item, 1);
         }
 
         #region Helpers

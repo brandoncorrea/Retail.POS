@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Retail.POS.Common.Interfaces;
+using Retail.POS.Common.Models;
 using System.IO;
 using System.Linq;
 
@@ -12,7 +13,7 @@ namespace Retail.POS.DL.Repositories
         public ItemRepository()
         {
             var jsonStr = File.ReadAllText("Repositories\\itemStore.json");
-            Items = JsonConvert.DeserializeObject<IItem[]>(jsonStr);
+            Items = JsonConvert.DeserializeObject<Item[]>(jsonStr);
         }
 
         public IItem Get(object id)
